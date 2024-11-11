@@ -7,6 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { MessageEntity } from './message/entities/message.entity';
 import { Model } from 'mongoose';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import axios from 'axios';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -20,7 +21,11 @@ export class AppService implements OnModuleInit {
   constructor(
     @InjectModel(MessageEntity.name) private messageModel: Model<MessageEntity>,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    setInterval(() => {
+      this.callRestartServiceRender();
+    }, 6000);
+  }
 
   onModuleInit() {
     if (this.token) {
@@ -122,6 +127,18 @@ export class AppService implements OnModuleInit {
       await this.messageModel.create(newMessageUser);
       await this.messageModel.create(newMessageBot);
       console.log('Create new message successfully!');
+    }
+  }
+
+  async callRestartServiceRender() {
+    try {
+      const result = await axios.get(
+        'https://telegram-bot-test-904q.onrender.com/',
+      );
+
+      console.log('connect-success', JSON.stringify(result));
+    } catch (error) {
+      console.log('connect-error', JSON.stringify(error));
     }
   }
 }
